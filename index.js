@@ -24,13 +24,13 @@ const run = async () => {
         const db = client.db('wanderlust_db');
         const destinationCollection = db.collection('destinations');
 
-        app.get('/destinations', async (req, res)=>{
+        app.get('/destinations', async (req, res) => {
             const result = await destinationCollection.find().toArray();
             res.send(result);
         })
-        app.get('/destinations/:id', async (req, res)=>{
-            const {id} = req.params;
-            const result = await destinationCollection.findOne({_id: new ObjectId(id)});
+        app.get('/destinations/:id', async (req, res) => {
+            const { id } = req.params;
+            const result = await destinationCollection.findOne({ _id: new ObjectId(id) });
             res.send(result);
         })
 
@@ -41,21 +41,20 @@ const run = async () => {
         })
 
         // update destination
-        app.patch('/destinations/:id', async (req, res)=>{
-            const {id} = req.params;
+        app.patch('/destinations/:id', async (req, res) => {
+            const { id } = req.params;
             const updatedData = req.body;
 
-            const result = destinationCollection.updateOne(
-                {_id: new ObjectId(id)},
-                {$set: updatedData}
+            const result = await destinationCollection.updateOne(
+                { _id: new ObjectId(id) },
+                { $set: updatedData }
             )
-            console.log(result);
             res.send(result);
         })
 
-        app.delete('/destinatiogitns/:id', async (req, res)=>{
-            const {id} = req.params;
-            const result = await destinationCollection.deleteOne({_id: new ObjectId(id)});
+        app.delete('/destinatiogitns/:id', async (req, res) => {
+            const { id } = req.params;
+            const result = await destinationCollection.deleteOne({ _id: new ObjectId(id) });
             res.send(result)
         })
 
