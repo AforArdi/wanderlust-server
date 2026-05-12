@@ -40,10 +40,22 @@ const run = async () => {
             res.send(result);
         })
 
-        app.delete('/destinations/:id', async (req, res)=>{
+        // update destination
+        app.patch('/destinations/:id', async (req, res)=>{
+            const {id} = req.params;
+            const updatedData = req.body;
+
+            const result = destinationCollection.updateOne(
+                {_id: new ObjectId(id)},
+                {$set: updatedData}
+            )
+            console.log(result);
+            res.send(result);
+        })
+
+        app.delete('/destinatiogitns/:id', async (req, res)=>{
             const {id} = req.params;
             const result = await destinationCollection.deleteOne({_id: new ObjectId(id)});
-            console.log(result);
             res.send(result)
         })
 
