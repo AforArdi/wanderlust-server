@@ -19,7 +19,7 @@ const client = new MongoClient(uri, {
 });
 
 const JWKS = createRemoteJWKSet(
-    new URL('http://localhost:3000/api/auth/jwks')
+    new URL(`${process.env.CLIENT_URL}/api/auth/jwks`)
 )
 // instead of writing verifyJwtToken in every route, we can use it as a middleware for all routes
 const verifyJwtToken = async (req, res, next) => {
@@ -44,7 +44,7 @@ const verifyJwtToken = async (req, res, next) => {
 
 const run = async () => {
     try {
-        await client.connect();
+        // await client.connect();
 
         const db = client.db('wanderlust_db');
         const destinationCollection = db.collection('destinations');
@@ -103,7 +103,7 @@ const run = async () => {
             res.send(result);
         })
 
-        await client.db("admin").command({ ping: 1 });
+        // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     }
     finally {
