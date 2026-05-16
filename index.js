@@ -60,14 +60,14 @@ const run = async () => {
             res.send(result);
         })
 
-        app.post('/destinations', async (req, res) => {
+        app.post('/destinations', verifyJwtToken, async (req, res) => {
             const doc = req.body;
             const result = await destinationCollection.insertOne(doc);
             res.send(result);
         })
 
         // update destination
-        app.patch('/destinations/:id', async (req, res) => {
+        app.patch('/destinations/:id', verifyJwtToken, async (req, res) => {
             const { id } = req.params;
             const updatedData = req.body;
 
@@ -78,7 +78,7 @@ const run = async () => {
             res.send(result);
         })
 
-        app.delete('/destinations/:id', async (req, res) => {
+        app.delete('/destinations/:id', verifyJwtToken, async (req, res) => {
             const { id } = req.params;
             const result = await destinationCollection.deleteOne({ _id: new ObjectId(id) });
             res.send(result)
