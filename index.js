@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { createRemoteJWKSet, jwtVerify } = require('jose-cjs');
 const app = express();
 const port = process.env.PORT || 5000
 const uri = process.env.MONGODB_URI
@@ -17,6 +18,30 @@ const client = new MongoClient(uri, {
     }
 });
 
+const JWKS = createRemoteJWKSet(
+    new URL('http://localhost:3000/api/auth/jwks')
+)
+// instead of writing verifyJwtToken in every route, we can use it as a middleware for all routes
+const verifyJwtToken = async (req, res, next) => {
+    const header = req?.headers.authorization;
+    if(!header){
+        return res.status(401).send({ message: 'Unauthorized access' });
+    }
+    const token = header?.split(' ')[1];
+    if(!token){
+        return res.status(401).send({ message: 'Unauthorized access' });
+    }
+    
+    try{
+        const {payload} = await jwtVerify(token, JWKS);
+        // console.log(payload);
+        next()
+    }
+    catch (error) {
+        res.status(403).send({ message: 'Forbidden access' });
+    }
+}
+
 const run = async () => {
     try {
         await client.connect();
@@ -29,7 +54,7 @@ const run = async () => {
             const result = await destinationCollection.find().toArray();
             res.send(result);
         })
-        app.get('/destinations/:id', async (req, res) => {
+        app.get('/destinations/:id', verifyJwtToken, async (req, res) => {
             const { id } = req.params;
             const result = await destinationCollection.findOne({ _id: new ObjectId(id) });
             res.send(result);
@@ -60,20 +85,20 @@ const run = async () => {
         })
 
         // bookings
-        app.get('/bookings/:userId', async (req, res)=>{
-            const {userId} = req.params;
+        app.get('/bookings/:userId', async (req, res) => {
+            const { userId } = req.params;
             const result = await bookingCollection.find({ userId: userId }).toArray();
             res.send(result);
         })
 
-        app.post('/bookings', async (req, res)=>{
+        app.post('/bookings', verifyJwtToken, async (req, res) => {
             const data = req.body;
             const result = await bookingCollection.insertOne(data);
             res.send(result);
         })
 
-        app.delete('/bookings/:id', async (req, res)=>{
-            const {id} = req.params;
+        app.delete('/bookings/:id', async (req, res) => {
+            const { id } = req.params;
             const result = await bookingCollection.deleteOne({ _id: new ObjectId(id) });
             res.send(result);
         })
@@ -88,7 +113,7 @@ const run = async () => {
 run().catch(console.dir);
 
 app.get('/', (req, res) => {
-    res.send('Welcome from Home');
+    res.send('Server is running fine....');
 })
 
 app.listen(port, () => {
