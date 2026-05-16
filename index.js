@@ -31,7 +31,7 @@ const verifyJwtToken = async (req, res, next) => {
     if(!token){
         return res.status(401).send({ message: 'Unauthorized access' });
     }
-    
+
     try{
         const {payload} = await jwtVerify(token, JWKS);
         // console.log(payload);
@@ -85,7 +85,7 @@ const run = async () => {
         })
 
         // bookings
-        app.get('/bookings/:userId', async (req, res) => {
+        app.get('/bookings/:userId', verifyJwtToken, async (req, res) => {
             const { userId } = req.params;
             const result = await bookingCollection.find({ userId: userId }).toArray();
             res.send(result);
@@ -97,7 +97,7 @@ const run = async () => {
             res.send(result);
         })
 
-        app.delete('/bookings/:id', async (req, res) => {
+        app.delete('/bookings/:id', verifyJwtToken, async (req, res) => {
             const { id } = req.params;
             const result = await bookingCollection.deleteOne({ _id: new ObjectId(id) });
             res.send(result);
